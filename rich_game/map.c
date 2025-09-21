@@ -6,7 +6,7 @@ void init_map() {
         for (int j = 0; j < MAP_COLS; j++) {
             map[i][j].type = ' ';
             map[i][j].owner = -1;
-            map[i][j].level = 0;
+            map[i][j].level = '0';
             map[i][j].has_item = 0;
             map[i][j].price = 0;
             map[i][j].toll = 0;

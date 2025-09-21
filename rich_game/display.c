@@ -77,12 +77,25 @@ void handle_position(int player_index) {
                 pay_toll(player_index);
             }
             break;
-            
+
         case 'T':
-            printf("道具屋\n");
-            // 简化版：随机获得一个道具
-            int item = rand() % 3 + 1;
-            if (players[player_index].item_count < MAX_ITEMS) {
+            printf("道具屋\n价格如下所示：\n");
+            printf("1. 路障 50点数\n");
+            printf("2. 机器娃娃 30点数\n");
+            printf("3. 炸弹 50点数\n");
+            // 根据输入的序号获得对应的道具并扣除相应的点数
+            int item = 0;
+            int cost = 0;
+            printf("请输入道具编号: ");
+            scanf("%d", &item);
+            switch (item) {
+                case 1: cost = 50; break;
+                case 2: cost = 30; break;
+                case 3: cost = 50; break;
+                default: printf("无效的道具编号\n"); return;
+            }
+            if (players[player_index].points >= cost) {
+                players[player_index].points -= cost;
                 players[player_index].items[players[player_index].item_count++] = item;
                 const char *item_name = "";
                 switch (item) {
@@ -91,7 +104,9 @@ void handle_position(int player_index) {
                     case 3: item_name = "炸弹"; break;
                 }
                 printf("获得了 %s\n", item_name);
-            } else {
+            } else if (players[player_index].points < cost) {
+                printf("点数不足，无法购买道具\n");
+            } else if (players[player_index].item_count >= MAX_ITEMS) {
                 printf("道具栏已满，无法获得新道具\n");
             }
             break;
@@ -117,32 +132,33 @@ void handle_position(int player_index) {
             break;
             
         case 'M':
-            if (row == 0 || row == MAP_ROWS-1 || col == 0 || col == MAP_COLS-1) {
-                printf("魔法屋\n");
-                // 简化版：随机获得或失去一些资源
-                int effect = rand() % 3;
-                switch (effect) {
-                    case 0:
-                        players[player_index].money += 1000;
-                        printf("获得了 1000元\n");
-                        break;
-                    case 1:
-                        players[player_index].points += 100;
-                        printf("获得了 100点\n");
-                        break;
-                    case 2:
-                        players[player_index].money -= 500;
-                        printf("失去了 500元\n");
-                        break;
+            printf("魔法屋\n");
+            // 简化版：随机获得或失去一些资源
+            int effect = rand() % 3;
+            switch (effect) {
+                case 0:
+                    players[player_index].money += 1000;
+                     printf("获得了 1000元\n");
+                    break;
+                case 1:
+                    players[player_index].points += 100;
+                    printf("获得了 100点\n");
+                    break;
+                case 2:
+                    players[player_index].money -= 500;
+                    printf("失去了 500元\n");
+                    break;
                 }
-            } else {
-                printf("矿地\n");
-                // 获得点数
-                int points = 20 + rand() % 80;
-                players[player_index].points += points;
-                printf("获得了 %d 点\n", points);
-            }
+                break;
+
+        case '$':
+            printf("矿地\n");
+            // 获得点数
+            int points = 20 + rand() % 80;
+            players[player_index].points += points;
+            printf("获得了 %d 点\n", points);
             break;
+
             
         case 'H':
             printf("医院\n");
@@ -289,4 +305,5 @@ void show_help() {
     printf("map         - 显示地图\n");
     printf("help        - 显示帮助信息\n");
     printf("quit        - 退出游戏\n");
+    printf("step n        - 向前移动n步\n");
 }

@@ -66,7 +66,14 @@ void game_loop() {
             printf("\n请输入命令 (输入help查看帮助): ");
             scanf("%s", command);
             
-            if (strcasecmp(command, "roll") == 0) {
+            if (strcasecmp(command, "step") == 0){
+                scanf("%d", &steps);
+                printf("移动 %d 步", steps);
+                move_player(current_player, steps);
+                handle_position(current_player);
+                break;
+            }
+            else if (strcasecmp(command, "roll") == 0) {
                 steps = roll_dice();
                 printf("掷出了 %d 点\n", steps);
                 move_player(current_player, steps);

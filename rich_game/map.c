@@ -105,8 +105,25 @@ void display_map() {
                 }
             }
             
-            if (player_here != -1) {
-                printf("%c", players[player_here].symbol);
+             if (player_here != -1) {
+                switch (player_here)
+                {
+                case 0:
+                    printf("\033[1;31m%c\033[0m", players[player_here].symbol);
+                    break;
+                case 1:
+                    printf("\033[1;32m%c\033[0m", players[player_here].symbol);
+                    break;
+                case 2:
+                    printf("\033[1;34m%c\033[0m", players[player_here].symbol); 
+                    break;
+                case 3:
+                    printf("\033[1;33m%c\033[0m", players[player_here].symbol); 
+                    break;
+                default:
+                    break;
+                }
+                
             } else if (map[i][j].has_item) {
                 switch (map[i][j].item_type) {
                     case 1: printf("#"); break; // 路障
@@ -118,10 +135,26 @@ void display_map() {
                 switch (map[i][j].type) {
                     case 'S': printf("S"); break;
                     case 'O': 
-                        if (map[i][j].owner == -1) {
+                     if (map[i][j].owner == -1) {
                             printf("O");
                         } else {
-                            printf("%d", map[i][j].level);
+                            switch (map[i][j].owner)
+                            {
+                            case 0:
+                                printf("\033[1;31m%d\033[0m", map[i][j].level);
+                                break;
+                            case 1:
+                                printf("\033[1;32m%d\033[0m", map[i][j].level);
+                                break;
+                            case 2:
+                                printf("\033[1;34m%d\033[0m", map[i][j].level); 
+                                break;
+                            case 3:
+                                printf("\033[1;33m%d\033[0m", map[i][j].level); 
+                                break;
+                            default:
+                                break;
+                            }
                         }
                         break;
                     case 'T': printf("T"); break;

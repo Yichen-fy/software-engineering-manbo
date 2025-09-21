@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <time.h>
 #include <ctype.h>
 
@@ -31,8 +32,8 @@ typedef struct {
 typedef struct {
     char type; // S:起点 O:空地 T:道具屋 G:礼品屋 M:魔法屋 H:医院 P:监狱 $:矿地
     int owner; // -1:无主, 0-3:玩家索引
-    int level; // 0:空地, 1:茅屋, 2:洋房, 3:摩天楼
-    int price;
+    char level; // 0:空地, 1:茅屋, 2:洋房, 3:摩天楼
+    int price; // 购买价格
     int toll; // 过路费
     int has_item; // 是否有道具
     int item_type; // 道具类型

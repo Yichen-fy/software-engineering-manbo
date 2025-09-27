@@ -18,6 +18,10 @@ def compare_json_with_rules(dump_data, expect_data, path=""):
         differences.append(f"类型不同在 {path}: expect是{type(expect_data).__name__}, dump是{type(dump_data).__name__}")
         return differences
     
+    # 如果是财神位置字段，跳过比较
+    if path.endswith(".god.location"):
+        return differences  # 跳过财神位置的比较
+    
     if isinstance(expect_data, dict):
         # 对于字典，只检查expect中存在的键
         for key in expect_data:

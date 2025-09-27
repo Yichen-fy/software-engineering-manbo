@@ -1,0 +1,21 @@
+{
+	"players":	[{
+			"index":	0,
+			"name":	"A",
+			"fund":1000,
+			"credit":	500,
+			"location":	28,
+			"alive":	true,
+			"prop":	{
+				"bomb":	0,
+				"barrier":	2,
+				"robot":	0,
+				"total":	0
+			},
+			"buff":	{
+				"god":	0,
+				"prison":	0,
+				"hospital":	0
+			}
+		}]
+}

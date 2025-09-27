@@ -1,0 +1,6 @@
+{
+	"god":	{
+		"spawn_cooldown":0,
+		"duration":5
+	}
+}

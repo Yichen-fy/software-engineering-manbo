@@ -15,7 +15,7 @@ if %errorlevel% neq 0 (
 echo 编译成功!
 
 REM 检查是否存在 preset.json 文件
-if exist "test/case1/preset.json" (
+if exist "test/case6.1/preset.json" (
     echo.
     echo [提示] 在 test/case1/ 目录下检测到 preset.json 文件
     echo [提示] 游戏将加载预设配置并直接开始游戏
@@ -28,7 +28,7 @@ if exist "test/case1/preset.json" (
 echo.
 echo 正在启动游戏...
 echo.
-richc.exe "test/case1/"
+richc.exe "test/case6.1/"
 
 echo.
 echo 游戏已退出

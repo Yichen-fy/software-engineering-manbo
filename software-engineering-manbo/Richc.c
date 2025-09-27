@@ -1,4 +1,5 @@
       
+      
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -805,9 +806,7 @@ void move_player(int player_index, int steps) {
                 // 不绕环
                 if (current_location <= god_prop.location && god_prop.location <= target_location) {
                     printf("%s 路过财神道具，获得财神附身5回合！\n", players[player_index].name);
-                    if (players[player_index].buff->god == 0)
-                        players[player_index].buff->god += 6;
-                    else players[player_index].buff->god += 5;
+                    players[player_index].buff->god += 6;
                     
                     // 重置财神道具
                     god_prop.spawn_cooldown = rand() % 11;
@@ -843,9 +842,7 @@ void move_player(int player_index, int steps) {
                 // 绕环
                 if (god_prop.location <= current_location || god_prop.location >= target_location) {
                     printf("%s 路过财神道具，获得财神附身5回合！\n", players[player_index].name);
-                    if (players[player_index].buff->god == 0)
-                        players[player_index].buff->god += 6;
-                    else players[player_index].buff->god += 5;
+                    players[player_index].buff->god += 6;
                     
                     // 重置财神道具
                     god_prop.spawn_cooldown = rand() % 11;
@@ -1305,9 +1302,7 @@ void handle_position(int player_index) {
                         printf("获得了 200点\n");
                         break;
                     case '3':
-                        if(players[player_index].buff->god == 0)
-                            players[player_index].buff->god += 6;
-                        else players[player_index].buff->god += 5;
+                        players[player_index].buff->god = 6;
                         printf("获得了财神附身，5回合有效\n");
                         break;
                     default:
@@ -1818,5 +1813,7 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
+    
 
     

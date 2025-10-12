@@ -1,5 +1,4 @@
       
-      
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,6 +10,7 @@
 
 // 函数声明
 void init_map();
+void display_properties(int player_index);
 
 // 定义常量
 #define MAP_ROWS 8
@@ -670,7 +670,7 @@ void init_players(char* player_chars, int initial_fund) {
         }
     }
     // 初始化财神道具
-    god_prop.spawn_cooldown = 11;
+    god_prop.spawn_cooldown = 10;
     god_prop.location = -1;
     god_prop.duration = 0;
 }
@@ -770,21 +770,53 @@ void display_player_status(int player_index) {
     position_to_coord(players[player_index].location, &row, &col);
     printf("位置: (%d, %d)\n", row, col);
     
-     printf("道具: 路障:%d个, 机器娃娃:%d个\n", 
+    printf("道具: 路障:%d个, 机器娃娃:%d个\n", 
            players[player_index].items->barrier, 
            players[player_index].items->robot);
     
-    // 删除医院和监狱状态显示
     if (players[player_index].buff->god > 0) {
         printf("状态: 财神附身 (%d回合有效)\n", players[player_index].buff->god);
     } else {
         printf("状态: 正常\n");
     }
+    
+    // 添加房产信息显示
 }
 
 // 掷骰子
 int roll_dice() {
     return rand() % 6 + 1;
+}
+
+void display_properties(int player_index) {
+    printf("房产信息:\n");
+    int total_property_value = 0;
+    int property_count = 0;
+    
+    for (int i = 0; i < TOTAL_CELLS; i++) {
+        int row, col;
+        position_to_coord(i, &row, &col);
+        
+        // 检查该位置是否有房屋且属于当前玩家
+        if (map[row][col].houses != NULL && 
+            map[row][col].houses->owner == players[player_index].symbol) {
+            
+            int price = map[row][col].price;
+            int level = map[row][col].houses->level;
+            int value = price * (level + 1); // 计算总投资价值
+            
+            printf("  - 位置 %d: 等级 %d, 价值 %d元\n", i, level, value);
+            
+            total_property_value += value;
+            property_count++;
+        }
+    }
+    
+    if (property_count == 0) {
+        printf("  暂无房产\n");
+    } else {
+        printf("  房产总数: %d处, 总价值: %d元\n", property_count, total_property_value);
+    }
 }
 
 // 移动玩家
@@ -806,8 +838,9 @@ void move_player(int player_index, int steps) {
                 // 不绕环
                 if (current_location <= god_prop.location && god_prop.location <= target_location) {
                     printf("%s 路过财神道具，获得财神附身5回合！\n", players[player_index].name);
-                    players[player_index].buff->god += 6;
-                    
+                    if (players[player_index].buff->god == 0)
+                        players[player_index].buff->god += 5;
+                    else players[player_index].buff->god += 4;
                     // 重置财神道具
                     god_prop.spawn_cooldown = rand() % 11;
                     god_prop.location = -1;
@@ -817,7 +850,9 @@ void move_player(int player_index, int steps) {
                 // 绕环
                 if (god_prop.location >= current_location || god_prop.location <= target_location) {
                     printf("%s 路过财神道具，获得财神附身5回合！\n", players[player_index].name);
-                    players[player_index].buff->god += 6;
+                    if (players[player_index].buff->god == 0)
+                        players[player_index].buff->god += 5;
+                    else players[player_index].buff->god += 4;
                     
                     // 重置财神道具
                     god_prop.spawn_cooldown = rand() % 11;
@@ -831,7 +866,9 @@ void move_player(int player_index, int steps) {
                 // 不绕环
                 if (current_location >= god_prop.location && god_prop.location >= target_location) {
                     printf("%s 路过财神道具，获得财神附身5回合！\n", players[player_index].name);
-                    players[player_index].buff->god += 6;
+                    if (players[player_index].buff->god == 0)
+                        players[player_index].buff->god += 5;
+                    else players[player_index].buff->god += 4;
                     
                     // 重置财神道具
                     god_prop.spawn_cooldown = rand() % 11;
@@ -842,7 +879,9 @@ void move_player(int player_index, int steps) {
                 // 绕环
                 if (god_prop.location <= current_location || god_prop.location >= target_location) {
                     printf("%s 路过财神道具，获得财神附身5回合！\n", players[player_index].name);
-                    players[player_index].buff->god += 6;
+                    if (players[player_index].buff->god == 0)
+                        players[player_index].buff->god += 5;
+                    else players[player_index].buff->god += 4;
                     
                     // 重置财神道具
                     god_prop.spawn_cooldown = rand() % 11;
@@ -1135,9 +1174,9 @@ void handle_position(int player_index) {
     int position = coord_to_position(row, col);
     if (position != -1) {
         if (placed_props.bomb[position] > 0) {
-            printf("被炸弹炸伤，住院3天\n");
-            players[player_index].buff->hospitail = 3;
-            placed_props.bomb[position] = 0; // 移除炸弹
+            printf("异常：炸弹功能已被移除，不生效\n");
+            players[player_index].buff->hospitail = 0;
+            placed_props.bomb[position] = 0;
             return;
         }
     }
@@ -1302,7 +1341,9 @@ void handle_position(int player_index) {
                         printf("获得了 200点\n");
                         break;
                     case '3':
-                        players[player_index].buff->god = 6;
+                        if(players[player_index].buff->god == 0)
+                            players[player_index].buff->god += 6;
+                        else players[player_index].buff->god += 5;
                         printf("获得了财神附身，5回合有效\n");
                         break;
                     default:
@@ -1344,9 +1385,7 @@ void handle_position(int player_index) {
 
 // 财神道具更新函数
 void update_god_prop() {
-    if (god_prop.spawn_cooldown > 0) {
-        god_prop.spawn_cooldown--;
-        
+    if (god_prop.spawn_cooldown >= 0) {
         if (god_prop.spawn_cooldown == 0) {
             // 冷却结束，生成财神道具
             int attempts = 0;
@@ -1387,16 +1426,22 @@ void update_god_prop() {
                     break;
                 }
             } while (1);
+        }else{
+            god_prop.spawn_cooldown--;
         }
-    } else if (god_prop.duration > 0) {
-        // 财神道具存在，减少持续时间
-        god_prop.duration--;
-        
+    }else if (god_prop.spawn_cooldown < 0){
+        printf("财神冷却时间异常，已重置为10");
+        god_prop.duration = 10;
+    } else if (god_prop.duration >= 0) {        
         if (god_prop.duration == 0) {
             // 持续时间结束，重置
-            god_prop.spawn_cooldown = rand() % 11 + 1; // 重置为0-10的随机数
+            god_prop.spawn_cooldown = rand() % 11; // 重置为0-10的随机数
             god_prop.location = -1;
         }
+        else god_prop.duration--;
+    }else if(god_prop.duration < 0){
+        printf("财神持续时间异常，已重置为0");
+        god_prop.duration = 0;
     }
 }
 
@@ -1439,12 +1484,13 @@ void use_doll(int player_index, int distance) {
 // 显示帮助信息
 void show_help() {
     printf("\n可用命令:\n");
-    printf("  roll        - 掷骰子前进\n");
+    printf("  roll        - 掷骰骰子前进\n");
     printf("  robot       - 使用机器娃娃\n");
     printf("  block n     - 在当前位置前/后方n格放置路障\n");
-    printf("  query       - 查询自己当前资产\n");
+    printf("  query       - 查询自己当前资产(资金、房产等)\n");
     printf("  help        - 查看可输入指令帮助\n");
-    printf("  1/2/3       - 在道具屋购买道具 (1:路障 2:机器娃娃 3:炸弹)\n");
+    printf("  1/2         - 在道具屋购买道具 (1:路障 2:机器娃娃)\n");
+    printf("  1/2/3       - 在礼品屋选择礼品 (1:2000资金 2:200点数 3:财神附体 其它:退出)\n");
     printf("  y/n         - 在购买/不买地产\n");
     printf("  y/n         - 在自己的地产上升级/不升级\n");
     printf("  quit        - 退出游戏并结算资产最多的玩家为胜者\n");
@@ -1531,15 +1577,38 @@ int process_command(int player_index, char* command) {
     }
 }
 
+void compress_spaces(char *str) {
+    char *dst = str;
+    char *src = str;
+    int in_space = 0;
+    
+    while (*src) {
+        if (*src == ' ') {
+            if (!in_space) {
+                *dst++ = ' ';
+                in_space = 1;
+            }
+        } else {
+            *dst++ = *src;
+            in_space = 0;
+        }
+        src++;
+    }
+    *dst = '\0';
+}
+
+// 辅助函数：将字符串转换为小写
+void to_lowercase(char *str) {
+    for (int i = 0; str[i]; i++) {
+        str[i] = tolower(str[i]);
+    }
+}
+
 // 主游戏循环
 void game_loop() {
     srand(time(NULL)); // 初始化随机数种子
     
     while (!game_state.ended) {
-        // 在玩家0行动前更新财神道具（每轮一次）
-        if (game_state.now_player == 0) {
-            update_god_prop();
-        }
 
         display_map();
         display_player_status(game_state.now_player);
@@ -1570,8 +1639,25 @@ void game_loop() {
 
                 // 去除换行符
                 command[strcspn(command, "\n")] = 0;
+                
+                // 忽略指令前方的空格
+                char *cmd_start = command;
+                while (*cmd_start == ' ') {
+                    cmd_start++;
+                }
+                
+                // 如果命令为空或全为空格，则重新输入
+                if (*cmd_start == '\0') {
+                    continue;
+                }
+                
+                // 压缩字符串中的多个空格为一个空格
+                compress_spaces(cmd_start);
+                
+                // 将命令转换为小写
+                to_lowercase(cmd_start);
                     
-                int command_result = process_command(game_state.now_player, command);
+                int command_result = process_command(game_state.now_player, cmd_start);
                     
                 if (command_result == 2) {// 立即终止程序
                     if (game_state.quit_early) {
@@ -1645,7 +1731,6 @@ void game_loop() {
             continue; // 继续循环以显示最终状态
         }
         
-        // 注意：原来在这里的 update_god_prop() 调用已被移除
 
         // 寻找下一个存活玩家
         int next_player_index = (game_state.now_player + 1) % MAX_PLAYERS;
@@ -1689,8 +1774,13 @@ void game_loop() {
                 attempts++;
             }
         }
+        // 在最后一个玩家行动后更新财神道具（每轮一次）
+        if (game_state.next_player == 0) {
+            update_god_prop();
+        }
     }
 }
+
 
 // 主函数
 int main(int argc, char *argv[]) {
@@ -1813,7 +1903,5 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
-
-    
 
     

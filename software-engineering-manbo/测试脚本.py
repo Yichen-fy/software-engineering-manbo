@@ -1,8 +1,7 @@
-      
 import os
 import subprocess
 import json
-from collections import defaultdict
+import sys
 
 def compare_json_with_rules(dump_data, expect_data, path=""):
     """
@@ -98,9 +97,9 @@ def compare_json_files(dump_path, expect_path):
     :return: 差异信息字符串
     """
     try:
-        with open(dump_path, 'r') as dump_file:
+        with open(dump_path, 'r', encoding='utf-8') as dump_file:
             dump_data = json.load(dump_file)
-        with open(expect_path, 'r') as expect_file:
+        with open(expect_path, 'r', encoding='utf-8') as expect_file:
             expect_data = json.load(expect_file)
     except json.JSONDecodeError as e:
         return f"JSON解析错误: {e}"
@@ -111,6 +110,23 @@ def compare_json_files(dump_path, expect_path):
         return "发现差异:\n" + "\n".join(differences)
     else:
         return "无差异"
+
+def get_expect_file_path(test_dir):
+    """
+    获取期望文件的路径，优先使用expect.json，如果不存在则使用expected_result.json
+    :param test_dir: 测试目录路径
+    :return: 期望文件路径
+    """
+    expect_path = os.path.join(test_dir, "expect.json")
+    if os.path.exists(expect_path):
+        return expect_path
+    
+    expected_result_path = os.path.join(test_dir, "expected_result.json")
+    if os.path.exists(expected_result_path):
+        return expected_result_path
+    
+    # 如果两个文件都不存在，返回默认的expect.json路径（用于错误提示）
+    return expect_path
 
 def run_test(test_dir, executable):
     """
@@ -124,8 +140,8 @@ def run_test(test_dir, executable):
         print(f"测试目录不存在: {test_dir}")
         return False
 
-    test_txt_path = os.path.join(test_dir, "test.txt")
-    expect_path = os.path.join(test_dir, "expect.json")
+    test_txt_path = os.path.join(test_dir, "input.txt")
+    expect_path = get_expect_file_path(test_dir)
     dump_path = os.path.join(test_dir, "dump.json")
 
     # 检查必要的文件是否存在
@@ -137,18 +153,21 @@ def run_test(test_dir, executable):
         return False
 
     # 读取测试命令
-    with open(test_txt_path, 'r') as f:
+    with open(test_txt_path, 'r', encoding='utf-8') as f:
         input_commands = f.read()
 
     # 运行程序，将测试目录作为参数传递，并将test.txt内容作为标准输入
-    process = subprocess.Popen([executable, test_dir], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, stderr = process.communicate(input=input_commands.encode())
+    process = subprocess.Popen([executable, test_dir], 
+                               stdin=subprocess.PIPE, 
+                               stdout=subprocess.PIPE, 
+                               stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate(input=input_commands.encode('utf-8'))
 
     # 检查程序是否成功运行
     if process.returncode != 0:
         print(f"程序运行失败，返回码：{process.returncode}")
         print("标准错误输出：")
-        print(stderr.decode())
+        print(stderr.decode('utf-8', errors='replace'))
         return False
 
     # 检查dump.json是否生成
@@ -173,10 +192,10 @@ def main():
     source_files = ["Richc.c", "cJSON.c"]  # C源文件列表
     executable = "./richc"   # 可执行文件名称
 
-    # 编译C程序
+    # 编译C程序 - 添加UTF-8编译选项
     if not os.path.exists(executable):
         print("编译C程序...")
-        compile_command = ['gcc', '-o', executable] + source_files + ['-lm']
+        compile_command = ['gcc', '-o', executable] + source_files + ['-lm', '-fexec-charset=UTF-8']
         compile_result = subprocess.run(compile_command)
         if compile_result.returncode != 0:
             print("极可能缺少cJSON.c文件，编译失败")
@@ -195,6 +214,10 @@ def main():
         print("未找到测试样例")
         return
 
+    # 设置控制台编码为UTF-8（仅Windows）
+    if sys.platform == "win32":
+        os.system("chcp 65001 > nul")  # 设置控制台代码页为UTF-8
+
     # 运行每个测试样例
     passed = 0
     total = len(test_cases)
@@ -212,5 +235,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-    

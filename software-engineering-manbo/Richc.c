@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <direct.h>
 #include "cJSON.h"
+#include <windows.h>
 
 // 函数声明
 void init_map();
@@ -1806,6 +1807,8 @@ void game_loop() {
 
 // 主函数
 int main(int argc, char *argv[]) {
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
     char preset_path[100] = {0};
 
     if (argc > 1) {

@@ -11,6 +11,8 @@
 // 函数声明
 void init_map();
 void display_properties(int player_index);
+void compress_spaces(char *str);  
+void to_lowercase(char *str);      
 
 // 定义常量
 #define MAP_ROWS 8
@@ -111,11 +113,12 @@ void dump_json(int player_count) {
 
     // players
     cJSON *players_arr = cJSON_CreateArray();
-    for (int i = 0; i < player_count; i++) {
+    for (int i = 0; i < MAX_PLAYERS; i++) {
+    if (players[i].alive) {  // 只处理存活的玩家
         cJSON *p = cJSON_CreateObject();
-        cJSON_AddNumberToObject(p, "index", players[i].index);
-        str[0] = players[i].symbol;
-        str[1] = '\0';
+        cJSON_AddNumberToObject(p, "index", players[i].index);  // 使用玩家实际的index
+        
+        char str[2] = {players[i].symbol, '\0'};
         cJSON_AddStringToObject(p, "name", str);
         cJSON_AddNumberToObject(p, "fund", players[i].fund);
         cJSON_AddNumberToObject(p, "credit", players[i].credit);
@@ -138,6 +141,7 @@ void dump_json(int player_count) {
         cJSON_AddItemToObject(p, "buff", buff);
 
         cJSON_AddItemToArray(players_arr, p);
+        }
     }
     cJSON_AddItemToObject(root, "players", players_arr);
 
@@ -230,11 +234,10 @@ bool import_json(const char *filename) {
 
     // 解析 players 数组
     cJSON *players_json = cJSON_GetObjectItem(root, "players");
-    int num_players = 0; // 初始化玩家数量
+    int num_players = 0;
     if (players_json && cJSON_IsArray(players_json)) {
         num_players = cJSON_GetArraySize(players_json);
         for (int i = 0; i < num_players && i < MAX_PLAYERS; i++) {
-            // 解析每个玩家数据
             cJSON *player_json = cJSON_GetArrayItem(players_json, i);
             if (!player_json) continue;
 
@@ -244,6 +247,8 @@ bool import_json(const char *filename) {
                 if (index < 0 || index >= MAX_PLAYERS) continue;
 
                 players[index].index = index;
+                
+                // ... 解析玩家数据的其他代码 ...
 
                 cJSON *name_json = cJSON_GetObjectItem(player_json, "name");
                 if (name_json && cJSON_IsString(name_json)) {
@@ -327,9 +332,9 @@ bool import_json(const char *filename) {
                         players[index].buff->hospitail = hospital_json->valueint;
                     }
                 }
-                player_count = num_players;
             }
         }
+        player_count = num_players;
     }
 
     // 解析 houses
@@ -1200,14 +1205,18 @@ void handle_position(int player_index) {
                 while(1){
                     printf("是否购买地产?(y/n): ");
                     scanf("%s", command);
+                    
+                    // 将输入转换为小写
+                    to_lowercase(command);
+                    
                     if (strcmp(command, "y") == 0){
                         buy_property(player_index);
                         break;
                     }
                     else if(strcmp(command, "n") == 0)
-                    break;
+                        break;
                     else
-                    printf("非法输入\n");
+                        printf("非法输入\n");
                 }
             } else if (cell->houses->owner == players[player_index].symbol) {
                 printf("自己的地产，可以升级\n");
@@ -1216,14 +1225,18 @@ void handle_position(int player_index) {
                 while(1){
                     printf("是否升级地产?(y/n): ");
                     scanf("%s", command);
+                    
+                    // 将输入转换为小写
+                    to_lowercase(command);
+                    
                     if (strcmp(command, "y") == 0) {
                         upgrade_property(player_index);
                         break;
                     }
                     else if(strcmp(command, "n") == 0)
-                    break;
+                        break;
                     else
-                    printf("非法输入\n");
+                        printf("非法输入\n");
                 }
             } else {
                 const char* owner_name = get_player_name_from_symbol(cell->houses->owner);
@@ -1265,10 +1278,13 @@ void handle_position(int player_index) {
             int c;
             while ((c = getchar()) != '\n' && c != EOF);
             
+            // 将输入转换为小写
+            to_lowercase(input);
+            
             if (strlen(input) == 1) {
                 char choice = input[0];
                 
-                if (choice == 'F' || choice == 'f') {
+                if (choice == 'f') {
                     printf("退出道具屋\n");
                     break;
                 }
@@ -1327,6 +1343,9 @@ void handle_position(int player_index) {
             // 清空输入缓冲区
             int c;
             while ((c = getchar()) != '\n' && c != EOF);
+            
+            // 将输入转换为小写
+            to_lowercase(input);
             
             if (strlen(input) == 1) {
                 char choice = input[0];
@@ -1542,11 +1561,12 @@ int process_command(int player_index, char* command) {
             printf("测试指令: 前进 %d 步\n", steps);
             move_player(player_index, steps);
             handle_position(player_index);
+            return 1; // 回合结束
         } 
         else {
             printf("用法: step n (n为步数)\n");
+            return 0; // 修正：非法step指令不结束回合
         }
-        return 1; // 回合结束
     }
     else if (strncmp(command, "sell", 4) == 0) {
         int position;
@@ -1609,7 +1629,10 @@ void game_loop() {
     srand(time(NULL)); // 初始化随机数种子
     
     while (!game_state.ended) {
-
+        for (int i = 0; i < player_count; i++) {
+            items[i].bomb = 0;
+            items[i].total = items[i].bomb + items[i].barrier + items[i].robot; 
+        }
         display_map();
         display_player_status(game_state.now_player);
         int row, col;
@@ -1780,7 +1803,6 @@ void game_loop() {
         }
     }
 }
-
 
 // 主函数
 int main(int argc, char *argv[]) {

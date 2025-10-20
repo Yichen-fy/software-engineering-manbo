@@ -110,48 +110,48 @@ const char* get_player_name_from_symbol(char symbol) {
 
 void dump_json(int player_count) {
     char str[2];
-   cJSON *root = cJSON_CreateObject();
+    cJSON *root = cJSON_CreateObject();
 
     // players
     cJSON *players_arr = cJSON_CreateArray();
     for (int i = 0; i < MAX_PLAYERS; i++) {
-    if (players[i].alive) {  // 只处理存活的玩家
-        cJSON *p = cJSON_CreateObject();
-        cJSON_AddNumberToObject(p, "index", players[i].index);  // 使用玩家实际的index
-        
-        char str[2] = {players[i].symbol, '\0'};
-        cJSON_AddStringToObject(p, "name", str);
-        cJSON_AddNumberToObject(p, "fund", players[i].fund);
-        cJSON_AddNumberToObject(p, "credit", players[i].credit);
-        cJSON_AddNumberToObject(p, "location", players[i].location);
-        cJSON_AddBoolToObject(p, "alive", players[i].alive);
+        // 修改：移除 alive 检查，处理所有玩家（包括破产的）
+        if (players[i].symbol != 0) {  // 检查玩家是否被初始化过
+            cJSON *p = cJSON_CreateObject();
+            cJSON_AddNumberToObject(p, "index", players[i].index);
+            
+            char str[2] = {players[i].symbol, '\0'};
+            cJSON_AddStringToObject(p, "name", str);
+            cJSON_AddNumberToObject(p, "fund", players[i].fund);
+            cJSON_AddNumberToObject(p, "credit", players[i].credit);
+            cJSON_AddNumberToObject(p, "location", players[i].location);
+            cJSON_AddBoolToObject(p, "alive", players[i].alive);  // 保留 alive 字段
 
-        // prop
-        cJSON *prop = cJSON_CreateObject();
-        cJSON_AddNumberToObject(prop, "bomb", players[i].items->bomb);
-        cJSON_AddNumberToObject(prop, "barrier", players[i].items->barrier);
-        cJSON_AddNumberToObject(prop, "robot", players[i].items->robot);
-        cJSON_AddNumberToObject(prop, "total", players[i].items->total);
-        cJSON_AddItemToObject(p, "prop", prop);
+            // prop
+            cJSON *prop = cJSON_CreateObject();
+            cJSON_AddNumberToObject(prop, "bomb", players[i].items->bomb);
+            cJSON_AddNumberToObject(prop, "barrier", players[i].items->barrier);
+            cJSON_AddNumberToObject(prop, "robot", players[i].items->robot);
+            cJSON_AddNumberToObject(prop, "total", players[i].items->total);
+            cJSON_AddItemToObject(p, "prop", prop);
 
-        // buff
-        cJSON *buff = cJSON_CreateObject();
-        cJSON_AddNumberToObject(buff, "god", players[i].buff->god);
-        cJSON_AddNumberToObject(buff, "prison", players[i].buff->prison);
-        cJSON_AddNumberToObject(buff, "hospital", players[i].buff->hospitail);
-        cJSON_AddItemToObject(p, "buff", buff);
+            // buff
+            cJSON *buff = cJSON_CreateObject();
+            cJSON_AddNumberToObject(buff, "god", players[i].buff->god);
+            cJSON_AddNumberToObject(buff, "prison", players[i].buff->prison);
+            cJSON_AddNumberToObject(buff, "hospital", players[i].buff->hospitail);
+            cJSON_AddItemToObject(p, "buff", buff);
 
-        cJSON_AddItemToArray(players_arr, p);
+            cJSON_AddItemToArray(players_arr, p);
         }
     }
     cJSON_AddItemToObject(root, "players", players_arr);
 
-    // houses
+    // houses (保持不变)
     cJSON *houses_obj = cJSON_CreateObject();
     for (int i = 0; i < TOTAL_CELLS; i++) {
         cJSON *h = cJSON_CreateObject();
         
-        // 修改这里：将字符串改为单个字符
         char owner_char[2] = {houses[i].owner, '\0'};
         cJSON_AddStringToObject(h, "owner", owner_char);
         
@@ -163,7 +163,7 @@ void dump_json(int player_count) {
     }
     cJSON_AddItemToObject(root, "houses", houses_obj);
 
-    // placed_prop
+    // placed_prop (保持不变)
     cJSON *placed_prop = cJSON_CreateObject();
     cJSON *bomb_arr = cJSON_CreateArray();
     cJSON *barrier_arr = cJSON_CreateArray();
@@ -177,7 +177,7 @@ void dump_json(int player_count) {
     cJSON_AddItemToObject(placed_prop, "barrier", barrier_arr);
     cJSON_AddItemToObject(root, "placed_prop", placed_prop);
 
-    // game
+    // game (保持不变)
     cJSON *game_obj = cJSON_CreateObject();
     cJSON_AddNumberToObject(game_obj, "now_player", game_state.now_player);
     cJSON_AddNumberToObject(game_obj, "next_player", game_state.next_player);
@@ -186,14 +186,14 @@ void dump_json(int player_count) {
     cJSON_AddNumberToObject(game_obj, "winner", game_state.winner);
     cJSON_AddItemToObject(root, "game", game_obj);
 
-    // 在dump_json函数中添加财神道具的导出
+    // god (保持不变)
     cJSON *god_obj = cJSON_CreateObject();
     cJSON_AddNumberToObject(god_obj, "spawn_cooldown", god_prop.spawn_cooldown);
     cJSON_AddNumberToObject(god_obj, "location", god_prop.location);
     cJSON_AddNumberToObject(god_obj, "duration", god_prop.duration);
     cJSON_AddItemToObject(root, "god", god_obj);
 
-    // 输出文件
+    // 输出文件 (保持不变)
     char *json_str = cJSON_Print(root);
     FILE *fp = fopen(save_path, "w");
     if (fp) {
@@ -844,9 +844,7 @@ void move_player(int player_index, int steps) {
                 // 不绕环
                 if (current_location <= god_prop.location && god_prop.location <= target_location) {
                     printf("%s 路过财神道具，获得财神附身5回合！\n", players[player_index].name);
-                    if (players[player_index].buff->god == 0)
                         players[player_index].buff->god += 5;
-                    else players[player_index].buff->god += 4;
                     // 重置财神道具
                     god_prop.spawn_cooldown = rand() % 11;
                     god_prop.location = -1;
@@ -856,9 +854,7 @@ void move_player(int player_index, int steps) {
                 // 绕环
                 if (god_prop.location >= current_location || god_prop.location <= target_location) {
                     printf("%s 路过财神道具，获得财神附身5回合！\n", players[player_index].name);
-                    if (players[player_index].buff->god == 0)
                         players[player_index].buff->god += 5;
-                    else players[player_index].buff->god += 4;
                     
                     // 重置财神道具
                     god_prop.spawn_cooldown = rand() % 11;
@@ -872,9 +868,7 @@ void move_player(int player_index, int steps) {
                 // 不绕环
                 if (current_location >= god_prop.location && god_prop.location >= target_location) {
                     printf("%s 路过财神道具，获得财神附身5回合！\n", players[player_index].name);
-                    if (players[player_index].buff->god == 0)
                         players[player_index].buff->god += 5;
-                    else players[player_index].buff->god += 4;
                     
                     // 重置财神道具
                     god_prop.spawn_cooldown = rand() % 11;
@@ -885,9 +879,7 @@ void move_player(int player_index, int steps) {
                 // 绕环
                 if (god_prop.location <= current_location || god_prop.location >= target_location) {
                     printf("%s 路过财神道具，获得财神附身5回合！\n", players[player_index].name);
-                    if (players[player_index].buff->god == 0)
                         players[player_index].buff->god += 5;
-                    else players[player_index].buff->god += 4;
                     
                     // 重置财神道具
                     god_prop.spawn_cooldown = rand() % 11;
@@ -1361,9 +1353,7 @@ void handle_position(int player_index) {
                         printf("获得了 200点\n");
                         break;
                     case '3':
-                        if(players[player_index].buff->god == 0)
-                            players[player_index].buff->god += 6;
-                        else players[player_index].buff->god += 5;
+                        players[player_index].buff->god += 5;
                         printf("获得了财神附身，5回合有效\n");
                         break;
                     default:
@@ -1405,73 +1395,111 @@ void handle_position(int player_index) {
 
 // 财神道具更新函数
 void update_god_prop() {
-    if (god_prop.spawn_cooldown >= 0) {
-        if (god_prop.spawn_cooldown == 0) {
-            // 冷却结束，生成财神道具
-            int attempts = 0;
-            int new_location;
+    if ((god_prop.spawn_cooldown > 0) && (god_prop.duration <= 0)) {
+        god_prop.spawn_cooldown--;
+    }
+    if ((god_prop.spawn_cooldown <= 0) && (god_prop.duration <= 0)) {
+        // 冷却结束，生成财神道具
+        // 先收集所有可用的位置
+        int available_locations[TOTAL_CELLS];
+        int available_count = 0;
             
-            // 尝试找到没有玩家、没有道具的空地
-            do {
-                new_location = rand() % TOTAL_CELLS;
-                attempts++;
-                
-                // 防止无限循环
-                if (attempts > 100) {
-                    god_prop.spawn_cooldown = rand() % 11; // 重置冷却为0-10的随机数
-                    return;
-                }
-                
-                // 检查是否有玩家在此位置
-                int has_player = 0;
-                for (int i = 0; i < MAX_PLAYERS; i++) {
-                    if (players[i].alive && players[i].location == new_location) {
-                        has_player = 1;
-                        break;
-                    }
-                }
-                
-                // 检查是否有道具在此位置
-                int has_prop = (placed_props.barrier[new_location] > 0 || 
-                               placed_props.bomb[new_location] > 0);
-                
-                // 检查是否是特殊地块（非空地）
-                int row, col;
-                position_to_coord(new_location, &row, &col);
-                int is_special = (map[row][col].type != 'O');
-                
-                if (!has_player && !has_prop && !is_special) {
-                    god_prop.location = new_location;
-                    god_prop.duration = 5;
+        // 遍历所有位置，检查是否可用
+        for (int pos = 0; pos < TOTAL_CELLS; pos++) {
+            // 检查是否有玩家在此位置
+            int has_player = 0;
+            for (int i = 0; i < MAX_PLAYERS; i++) {
+                if (players[i].alive && players[i].location == pos) {
+                    has_player = 1;
                     break;
                 }
-            } while (1);
-        }else{
-            god_prop.spawn_cooldown--;
+            }
+                
+            if (has_player) {
+                continue; // 有玩家，跳过
+            }
+                
+            // 检查是否有道具在此位置
+            int has_prop = (placed_props.barrier[pos] > 0 || 
+                           placed_props.bomb[pos] > 0);
+            if (has_prop) {
+                continue; // 有道具，跳过
+            }
+                
+            // 检查是否是礼品屋或道具屋
+            int row, col;
+            position_to_coord(pos, &row, &col);
+            int is_gift_or_item_shop = (map[row][col].type == 'G' || map[row][col].type == 'T');
+                
+            if (is_gift_or_item_shop) {
+                continue; // 是礼品屋或道具屋，跳过
+            }
+                
+            // 检查是否已经有财神道具在此位置
+            if (god_prop.location == pos && god_prop.duration > 0) {
+                continue; // 已经有财神道具，跳过
+            }
+                
+            // 所有条件都满足，添加到可用位置列表
+            available_locations[available_count++] = pos;
         }
-    }else if (god_prop.spawn_cooldown < 0){
-        printf("财神冷却时间异常，已重置为10");
-        god_prop.duration = 10;
-    } else if (god_prop.duration >= 0) {        
-        if (god_prop.duration == 0) {
+            
+        // 如果有可用位置，随机选择一个生成财神道具
+        if (available_count > 0) {
+            int random_index = rand() % available_count;
+            god_prop.location = available_locations[random_index];
+            god_prop.duration = 6;
+                
+            // 显示生成信息
+            int row, col;
+            position_to_coord(god_prop.location, &row, &col);
+            printf("财神道具出现在位置%d\n", god_prop.location);
+        } else {
+            // 没有可用位置，重置冷却时间
+            god_prop.spawn_cooldown = rand() % 11;
+            printf("没有合适位置放置财神道具，冷却时间重置为 %d\n", god_prop.spawn_cooldown);
+        }
+    } 
+    if ((god_prop.duration > 0) && (god_prop.spawn_cooldown <= 0)) {     
+        god_prop.duration--; 
+    } 
+    if ((god_prop.duration <= 0) && (god_prop.spawn_cooldown <= 0)) {
             // 持续时间结束，重置
-            god_prop.spawn_cooldown = rand() % 11; // 重置为0-10的随机数
+            god_prop.spawn_cooldown = rand() % 11;
             god_prop.location = -1;
-        }
-        else god_prop.duration--;
-    }else if(god_prop.duration < 0){
-        printf("财神持续时间异常，已重置为0");
-        god_prop.duration = 0;
+            printf("财神道具消失\n");
     }
 }
 
 // 使用路障
 void use_block(int player_index, int distance) {
     if (players[player_index].items->barrier > 0) {
+        // 计算目标位置
+        int target_pos = (players[player_index].location + distance + TOTAL_CELLS) % TOTAL_CELLS;
+        
+        // 检查目标位置是否有玩家
+        bool has_player = false;
+        for (int i = 0; i < MAX_PLAYERS; i++) {
+            if (players[i].alive && players[i].location == target_pos) {
+                has_player = true;
+                break;
+            }
+        }
+        
+        if (has_player) {
+            printf("不能将路障放置在玩家所在的位置！\n");
+            return;
+        }
+        
+        // 检查是否已经有路障
+        if (placed_props.barrier[target_pos] > 0) {
+            printf("该位置已经存在路障！\n");
+            return;
+        }
+        
         players[player_index].items->barrier--;
         players[player_index].items->total--;
         
-        int target_pos = (players[player_index].location + distance + TOTAL_CELLS) % TOTAL_CELLS;
         placed_props.barrier[target_pos] = 1;
         
         int row, col;
@@ -1630,12 +1658,21 @@ void game_loop() {
     srand(time(NULL)); // 初始化随机数种子
     
     while (!game_state.ended) {
+        // 定期清理炸弹数组，确保炸弹功能被完全禁用
+        memset(placed_props.bomb, 0, sizeof(placed_props.bomb));
+        
         for (int i = 0; i < player_count; i++) {
             items[i].bomb = 0;
             items[i].total = items[i].bomb + items[i].barrier + items[i].robot; 
         }
         display_map();
         display_player_status(game_state.now_player);
+        
+        // 更新财神附身状态
+        if (players[game_state.now_player].buff->god > 0) {
+            players[game_state.now_player].buff->god--;
+        }
+        
         int row, col;
         position_to_coord(players[game_state.now_player].location, &row, &col);
         int pos = coord_to_position(row, col);
@@ -1653,7 +1690,7 @@ void game_loop() {
             char command[50];
             
             printf("\n%s 的回合，请输入命令 (输入 'help' 查看帮助):\n", players[game_state.now_player].name);
-            
+
             while (!turn_end) {
                 printf(">");
                 if (fgets(command, sizeof(command), stdin) == NULL) {
@@ -1728,11 +1765,12 @@ void game_loop() {
                 // 移除了额外的提示，因为每次循环都会显示 ">"
             }
         }
-        
-        // 更新财神附身状态
-        if (players[game_state.now_player].buff->god > 0) {
-            players[game_state.now_player].buff->god--;
+
+        // 在最后一个玩家行动后更新财神道具（每轮一次）
+        if (game_state.next_player == 0) {
+            update_god_prop();
         }
+        
 
         // 检查游戏是否结束（简化版：当只剩一个玩家时结束）
         int alive_count = 0;
@@ -1797,10 +1835,6 @@ void game_loop() {
                 game_state.next_player = (game_state.next_player + 1) % MAX_PLAYERS;
                 attempts++;
             }
-        }
-        // 在最后一个玩家行动后更新财神道具（每轮一次）
-        if (game_state.next_player == 0) {
-            update_god_prop();
         }
     }
 }

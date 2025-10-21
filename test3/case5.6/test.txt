@@ -1,7 +1,0 @@
-block 10
-step 5
-n
-robot
-step 12
-n
-dump

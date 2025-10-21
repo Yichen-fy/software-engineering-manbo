@@ -1212,24 +1212,37 @@ void handle_position(int player_index) {
                         printf("非法输入\n");
                 }
             } else if (cell->houses->owner == players[player_index].symbol) {
-                printf("自己的地产，可以升级\n");
-                printf("升级价格: %d元\n", cell->price);
-                char command[10];
-                while(1){
-                    printf("是否升级地产?(y/n): ");
-                    scanf("%s", command);
-                    
-                    // 将输入转换为小写
-                    to_lowercase(command);
-                    
-                    if (strcmp(command, "y") == 0) {
-                        upgrade_property(player_index);
-                        break;
+                printf("自己的地产");
+                
+                // 检查资金是否足够升级
+                if (players[player_index].fund >= cell->price && cell->houses->level < 3) {
+                    printf("，可以升级\n");
+                    printf("升级价格: %d元\n", cell->price);
+                    char command[10];
+                    while(1){
+                        printf("是否升级地产?(y/n): ");
+                        scanf("%s", command);
+                        
+                        // 将输入转换为小写
+                        to_lowercase(command);
+                        
+                        if (strcmp(command, "y") == 0) {
+                            upgrade_property(player_index);
+                            break;
+                        }
+                        else if(strcmp(command, "n") == 0)
+                            break;
+                        else
+                            printf("非法输入\n");
                     }
-                    else if(strcmp(command, "n") == 0)
-                        break;
-                    else
-                        printf("非法输入\n");
+                } else {
+                    // 资金不足或已达最高等级，自动跳过升级询问
+                    if (cell->houses->level >= 3) {
+                        printf("，已是最高等级，无需升级\n");
+                    } else {
+                        printf("，资金不足，无法升级（需要%d元，当前有%d元）\n", 
+                               cell->price, players[player_index].fund);
+                    }
                 }
             } else {
                 const char* owner_name = get_player_name_from_symbol(cell->houses->owner);
@@ -1238,6 +1251,7 @@ void handle_position(int player_index) {
             }
             break;
             
+        // 其他case保持不变...
         case 'T':
             if(players[player_index].items->total >= MAX_ITEMS){
                 printf("道具栏已满，无法购买更多道具\n");
@@ -1657,6 +1671,29 @@ void to_lowercase(char *str) {
 void game_loop() {
     srand(time(NULL)); // 初始化随机数种子
     
+    // 添加检测：如果玩家数量等于1，直接结束游戏
+    if (player_count == 1) {
+        printf("检测到只有一名玩家，游戏直接结束！\n");
+        
+        // 找到存活的玩家
+        for (int i = 0; i < MAX_PLAYERS; i++) {
+            if (players[i].alive) {
+                game_state.winner = i;
+                game_state.next_player = i;
+                game_state.next_player = i;
+                game_state.ended = true;
+                break;
+            }
+        }
+        
+        if (game_state.winner != -1) {
+            printf("胜者是: %s！\n", players[game_state.winner].name);
+        }
+        
+        dump_json(player_count);
+        return;
+    }
+
     while (!game_state.ended) {
         // 定期清理炸弹数组，确保炸弹功能被完全禁用
         memset(placed_props.bomb, 0, sizeof(placed_props.bomb));
@@ -1771,29 +1808,6 @@ void game_loop() {
             update_god_prop();
         }
         
-
-        // 检查游戏是否结束（简化版：当只剩一个玩家时结束）
-        int alive_count = 0;
-        int last_alive = -1;
-        for (int i = 0; i < MAX_PLAYERS; i++) {
-            if (players[i].alive) {
-                alive_count++;
-                last_alive = i;
-            }
-        }
-        
-        if (alive_count <= 1) {
-            game_state.ended = true;
-            if (alive_count == 1) {
-                game_state.winner = last_alive;
-                printf("\n游戏结束！%s 获胜！\n", players[last_alive].name);
-            } else {
-                printf("\n游戏结束！所有玩家都出局了！\n");
-            }
-            continue; // 继续循环以显示最终状态
-        }
-        
-
         // 寻找下一个存活玩家
         int next_player_index = (game_state.now_player + 1) % MAX_PLAYERS;
         int attempts = 0;
@@ -1837,6 +1851,7 @@ void game_loop() {
             }
         }
     }
+    dump_json(player_count);
 }
 
 // 主函数
@@ -1954,10 +1969,7 @@ int main(int argc, char *argv[]) {
 
     game_loop();
 
-    
-
     printf("\n游戏结束，按任意键退出...");
-    getchar();
     getchar();
 
     return 0;

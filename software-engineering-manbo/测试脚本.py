@@ -3,6 +3,8 @@ import subprocess
 import json
 import sys
 from datetime import datetime
+import signal
+import threading
 
 def compare_json_with_rules(dump_data, expect_data, path=""):
     """
@@ -172,12 +174,13 @@ def get_expect_file_path(test_dir):
     # 如果两个文件都不存在，返回默认的expect.json路径（用于错误提示）
     return expect_path
 
-def run_test(test_dir, executable, result_file):
+def run_test_with_timeout(test_dir, executable, result_file, timeout_seconds=30):
     """
-    运行单个测试样例
+    运行单个测试样例，带超时检测
     :param test_dir: 测试目录路径
     :param executable: 可执行文件路径
     :param result_file: 结果文件对象
+    :param timeout_seconds: 超时时间（秒）
     :return: 测试是否通过（布尔值）
     """
     # 检查测试目录是否存在
@@ -208,11 +211,34 @@ def run_test(test_dir, executable, result_file):
         input_commands = f.read()
 
     # 运行程序，将测试目录作为参数传递，并将test.txt内容作为标准输入
-    process = subprocess.Popen([executable, test_dir], 
-                               stdin=subprocess.PIPE, 
-                               stdout=subprocess.PIPE, 
-                               stderr=subprocess.PIPE)
-    stdout, stderr = process.communicate(input=input_commands.encode('utf-8'))
+    try:
+        process = subprocess.Popen([executable, test_dir], 
+                                   stdin=subprocess.PIPE, 
+                                   stdout=subprocess.PIPE, 
+                                   stderr=subprocess.PIPE)
+        
+        # 设置超时机制
+        def timeout_handler():
+            process.terminate()  # 尝试优雅终止
+            # 如果进程在5秒内没有响应，强制杀死
+            threading.Timer(5, lambda: process.kill() if process.poll() is None else None).start()
+        
+        timer = threading.Timer(timeout_seconds, timeout_handler)
+        timer.start()
+        
+        stdout, stderr = process.communicate(input=input_commands.encode('utf-8'))
+        timer.cancel()  # 取消定时器，因为进程已经完成
+        
+    except subprocess.TimeoutExpired:
+        error_msg = f"程序运行超时（{timeout_seconds}秒），已跳过该测试用例"
+        print(error_msg)
+        result_file.write(error_msg + "\n")
+        return False
+    except Exception as e:
+        error_msg = f"程序运行异常: {str(e)}"
+        print(error_msg)
+        result_file.write(error_msg + "\n")
+        return False
 
     # 检查程序是否成功运行
     if process.returncode != 0:
@@ -250,9 +276,10 @@ def run_test(test_dir, executable, result_file):
 
 def main():
     # 设置路径
-    test_root = "test"  # 测试根目录
+    test_root = "rent"  # 测试根目录
     source_files = ["Richc.c", "cJSON.c"]  # C源文件列表
     executable = "./richc"   # 可执行文件名称
+    timeout_seconds = 10  # 超时时间（秒）
 
     # 打开结果文件
     with open("result.txt", "w", encoding="utf-8") as result_file:
@@ -260,6 +287,7 @@ def main():
         start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         header = f"测试开始时间: {start_time}\n"
         header += "=" * 50 + "\n"
+        header += f"超时设置: {timeout_seconds}秒\n"
         print(header)
         result_file.write(header)
         
@@ -297,20 +325,32 @@ def main():
         # 运行每个测试样例
         passed = 0
         total = len(test_cases)
+        skipped_due_timeout = 0
+        
         for test_dir in test_cases:
             test_case_name = os.path.basename(test_dir)
             test_info = f"测试样例：{test_case_name}"
             print(test_info)
             result_file.write(test_info + "\n")
-            if run_test(test_dir, executable, result_file):
-                success_msg = "通过"
-                print(success_msg)
-                result_file.write(success_msg + "\n")
-                passed += 1
-            else:
+            
+            try:
+                if run_test_with_timeout(test_dir, executable, result_file, timeout_seconds):
+                    success_msg = "通过"
+                    print(success_msg)
+                    result_file.write(success_msg + "\n")
+                    passed += 1
+                else:
+                    fail_msg = "失败"
+                    print(fail_msg)
+                    result_file.write(fail_msg + "\n")
+            except Exception as e:
+                error_msg = f"测试异常: {str(e)}"
+                print(error_msg)
+                result_file.write(error_msg + "\n")
                 fail_msg = "失败"
                 print(fail_msg)
                 result_file.write(fail_msg + "\n")
+            
             print()  # 空行分隔
             result_file.write("\n")
 
@@ -319,6 +359,8 @@ def main():
         footer = "=" * 50 + "\n"
         footer += f"测试结束时间: {end_time}\n"
         footer += f"测试完成：通过 {passed}/{total}\n"
+        if skipped_due_timeout > 0:
+            footer += f"因超时跳过的测试用例: {skipped_due_timeout}\n"
         print(footer)
         result_file.write(footer)
 

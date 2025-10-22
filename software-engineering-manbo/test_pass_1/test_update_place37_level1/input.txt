@@ -1,3 +1,0 @@
-step 37
-y
-dump

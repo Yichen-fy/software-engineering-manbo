@@ -1,3 +1,0 @@
-step 19
-y
-dump

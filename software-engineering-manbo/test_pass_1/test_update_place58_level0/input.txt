@@ -1,3 +1,0 @@
-step 58
-y
-dump

@@ -1,9 +1,0 @@
-step 15
-y
-step 30
-y
-step 45
-y
-roll
-n
-dump

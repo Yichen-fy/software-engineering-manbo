@@ -1,3 +1,0 @@
-step 48
-y
-dump

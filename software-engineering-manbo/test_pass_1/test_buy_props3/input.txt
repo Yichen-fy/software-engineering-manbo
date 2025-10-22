@@ -1,4 +1,0 @@
-step 1
-2
-F
-dump

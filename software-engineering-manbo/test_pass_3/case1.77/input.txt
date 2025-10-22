@@ -1,3 +1,0 @@
-step 70
-y
-dump

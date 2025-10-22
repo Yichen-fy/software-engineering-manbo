@@ -1,0 +1,2 @@
+sell 20
+dump

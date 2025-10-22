@@ -1,0 +1,2 @@
+sell 50
+dump

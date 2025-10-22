@@ -1,0 +1,4 @@
+step 0
+sell 11
+sell 1
+dump

@@ -1,0 +1,4 @@
+xyz
+123abc
+invalid_command
+dump

@@ -1,0 +1,4 @@
+step 10
+y
+step 10
+dump

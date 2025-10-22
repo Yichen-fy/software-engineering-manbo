@@ -1,0 +1,373 @@
+{
+	"players":	[{
+			"index":	0,
+			"name":	"Q",
+			"fund":	9700,
+			"credit":	0,
+			"location":	55,
+			"alive":	true,
+			"prop":	{
+				"bomb":	0,
+				"barrier":	0,
+				"robot":	0,
+				"total":	0
+			},
+			"buff":	{
+				"god":	0,
+				"prison":	0,
+				"hospital":	0
+			}
+		}, {
+			"index":	1,
+			"name":	"A",
+			"fund":	10000,
+			"credit":	0,
+			"location":	0,
+			"alive":	true,
+			"prop":	{
+				"bomb":	0,
+				"barrier":	0,
+				"robot":	0,
+				"total":	0
+			},
+			"buff":	{
+				"god":	0,
+				"prison":	0,
+				"hospital":	0
+			}
+		}, {
+			"index":	2,
+			"name":	"S",
+			"fund":	10000,
+			"credit":	0,
+			"location":	0,
+			"alive":	true,
+			"prop":	{
+				"bomb":	0,
+				"barrier":	0,
+				"robot":	0,
+				"total":	0
+			},
+			"buff":	{
+				"god":	0,
+				"prison":	0,
+				"hospital":	0
+			}
+		}, {
+			"index":	3,
+			"name":	"J",
+			"fund":	10000,
+			"credit":	0,
+			"location":	0,
+			"alive":	true,
+			"prop":	{
+				"bomb":	0,
+				"barrier":	0,
+				"robot":	0,
+				"total":	0
+			},
+			"buff":	{
+				"god":	0,
+				"prison":	0,
+				"hospital":	0
+			}
+		}],
+	"houses":	{
+		"0":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"1":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"2":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"3":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"4":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"5":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"6":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"7":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"8":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"9":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"10":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"11":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"12":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"13":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"14":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"15":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"16":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"17":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"18":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"19":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"20":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"21":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"22":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"23":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"24":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"25":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"26":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"27":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"28":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"29":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"30":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"31":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"32":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"33":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"34":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"35":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"36":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"37":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"38":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"39":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"40":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"41":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"42":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"43":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"44":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"45":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"46":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"47":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"48":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"49":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"50":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"51":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"52":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"53":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"54":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"55":	{
+			"owner":	"Q",
+			"level":	0
+		},
+		"56":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"57":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"58":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"59":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"60":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"61":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"62":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"63":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"64":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"65":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"66":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"67":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"68":	{
+			"owner":	"-",
+			"level":	0
+		},
+		"69":	{
+			"owner":	"-",
+			"level":	0
+		}
+	},
+	"placed_prop":	{
+		"bomb":	[],
+		"barrier":	[]
+	},
+	"game":	{
+		"now_player":	1,
+		"next_player":	2,
+		"started":	false,
+		"ended":	false,
+		"winner":	-1
+	},
+	"god":	{
+		"spawn_cooldown":	10,
+		"location":	-1,
+		"duration":	0
+	}
+}

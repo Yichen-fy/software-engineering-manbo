@@ -1,0 +1,3 @@
+sell 1
+sell 3
+dump

@@ -1,0 +1,4 @@
+step 24
+y
+step 24
+dump

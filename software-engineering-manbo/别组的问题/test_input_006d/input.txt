@@ -1,3 +1,0 @@
-sell 100
-sell -1
-dump

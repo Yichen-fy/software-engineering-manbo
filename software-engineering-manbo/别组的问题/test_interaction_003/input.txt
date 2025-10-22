@@ -1,2 +1,0 @@
-bomb 5
-dump

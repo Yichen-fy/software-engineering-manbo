@@ -1,3 +1,0 @@
-sell 28
-sell 35
-dump

@@ -1,2 +1,0 @@
-sell 1
-dump

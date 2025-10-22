@@ -1,5 +1,0 @@
-10000
-12
-status
-dump
-quit

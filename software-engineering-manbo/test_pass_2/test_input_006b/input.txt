@@ -1,3 +1,0 @@
-block 15
-block -15
-dump

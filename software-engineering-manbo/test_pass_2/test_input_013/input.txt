@@ -1,5 +1,0 @@
-step 1
-block 3
-block 3
-n
-dump

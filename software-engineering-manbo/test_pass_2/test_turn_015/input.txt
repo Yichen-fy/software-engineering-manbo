@@ -1,4 +1,0 @@
-sell 1
-step 3
-n
-dump

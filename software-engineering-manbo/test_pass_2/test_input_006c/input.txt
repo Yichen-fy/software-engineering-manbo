@@ -1,3 +1,0 @@
-bomb 20
-bomb -20
-dump

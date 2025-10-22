@@ -1,3 +1,0 @@
-sell 3
-sell 5
-dump

@@ -1,5 +1,0 @@
-step 1
-roll
-step
-n
-dump

@@ -1,4 +1,0 @@
-robot
-step 3
-n
-dump
